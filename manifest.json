@@ -1,0 +1,18 @@
+
+{
+  "manifest_version": 3,
+  "name": "Tabbify",
+  "version": "0.1",
+  "description": "Organize tab groups into a library-style interface.",
+  "permissions": ["tabs", "storage"],
+  "icons": {
+  "16": "icons/icon16.png",
+  "32": "icons/icon32.png",
+  "48": "icons/icon48.png",
+  "128": "icons/icon128.png"
+  }, 
+  "action": {
+    "default_popup": "src/popup/popup.html",
+    "default_icon": "icons/icon32.png"
+  }
+}
