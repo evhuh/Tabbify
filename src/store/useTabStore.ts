@@ -48,11 +48,14 @@ type Folder = {
 type TabStore = {
     folders: Folder[];
     activeFolderId: string | null;
+    globalStacks: Stack[];
     whiteboardItems: WhiteboardItem[];
 
     // Folder actions
     addFolder: (name: string) => void;
     toggleFolderPin: (id: string) => void;
+
+    addGlobalStack: (stack: Stack) => void;
 
     // Stack actions
     addStack: (folderId: string, stack: Stack) => void;
@@ -77,6 +80,7 @@ export const useTabStore = create<TabStore>()(
     (set, get) => ({
         folders: [],
         activeFolderId: null,
+        globalStacks: [],
         whiteboardItems: [],
         
 
@@ -91,6 +95,12 @@ export const useTabStore = create<TabStore>()(
             folders: state.folders.map((f) =>
                 f.id === id ? { ...f, pinned: !f.pinned } : f
             )
+            }));
+        },
+
+        addGlobalStack: (stack) => {
+            set((state) => ({
+                globalStacks: [...state.globalStacks, stack]
             }));
         },
 

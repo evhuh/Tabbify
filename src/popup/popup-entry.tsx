@@ -1,3 +1,4 @@
+// React entry file, renders POpupView
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
