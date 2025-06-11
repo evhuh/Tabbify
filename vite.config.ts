@@ -28,8 +28,16 @@ export default defineConfig({
       input: {
         popup: resolve(__dirname, 'src/popup/popup.html'),
         home: resolve(__dirname, 'src/home/home.html'),
+        background: resolve(__dirname, 'src/background.ts'),
+      },
+      output: {
+        entryFileNames: (chunk) => {
+          if (chunk.name === 'background') return 'background.js';
+          return 'assets/[name]-[hash].js';
+        },
       },
     },
+    
     outDir: 'dist',
     emptyOutDir: true,
   },

@@ -26,19 +26,46 @@ export default function PopupView() {
         return;
       }
 
+      const isInGroup = activeTab.groupId !== undefined && activeTab.groupId !== -1;
+
       let tabsToSave: chrome.tabs.Tab[] = [];
+      let relatedNewTabPages: chrome.tabs.Tab[] = [];
       let stackName = 'Untitled Stack';
       let color = '#fcba03';
 
-      if (activeTab.groupId !== undefined && activeTab.groupId !== -1) {
+      if (isInGroup) {
         // CASE 1: Active tab in a Crhome group
-        tabsToSave = tabs.filter((tab) => tab.groupId === activeTab.groupId);
+        tabsToSave = tabs.filter(
+          (tab) =>
+            tab.groupId === activeTab.groupId &&
+            tab.url &&
+            !tab.url.startsWith('chrome://newtab')
+        );
+
+        relatedNewTabPages = tabs.filter(
+          (tab) => 
+            tab.groupId === activeTab.groupId &&
+            tab.url?.startsWith('chrome://newtab')
+        );
+
         const group = await chrome.tabGroups.get(activeTab.groupId);
         stackName = group.title || 'Unnamed Group';
-        color = color;  // TODO save chrome group color to be re-opened
+        // color = color;  // TODO save chrome group color to be re-opened
+
       } else {
         // CASE 2: Active tab free-flaoting
-        tabsToSave = tabs.filter((tab) => tab.groupId === -1);
+        tabsToSave = tabs.filter(
+          (tab) =>
+            tab.groupId === activeTab.groupId &&
+            tab.url &&
+            !tab.url.startsWith('chrome://newtab')
+        );
+
+        relatedNewTabPages = tabs.filter(
+          (tab) => 
+            tab.groupId === activeTab.groupId &&
+            tab.url?.startsWith('chrome://newtab')
+        );
       }
       
       const newStack = {
@@ -54,9 +81,26 @@ export default function PopupView() {
         })),
       };
 
+      // add stack
       addGlobalStack(newStack);
-      setMessage(`Saved '$(stackName}'`);
+    
+      // remove tabs
+      const allTabsToRemove = [...tabsToSave, ...relatedNewTabPages];
+      const tabIdsToRemove = allTabsToRemove
+        .map((tab) => tab.id)
+        .filter((id): id is number => typeof id === 'number');
+    
+      // BACKGROUND to remove tabs, then open homepage
+      if (tabIdsToRemove.length > 0) {
+        await chrome.runtime.sendMessage({
+          type: 'REMOVE_TABS_AND_OPEN_HOMEPAGE',
+          payload: {tabIds: tabIdsToRemove},
+        });
+      } else {
+        await toggleHomepage();
+      }
 
+      setMessage(`Saved '${newStack.name}'`);
     } catch (err) {
       console.error(err);
       setMessage('Error saving stack');
@@ -79,7 +123,7 @@ export default function PopupView() {
       {message && <p className="mt-2 text-sm">{message}</p>}
 
       <button
-        onClick={openOrFocusHomePage}
+        onClick={toggleHomepage}
         className="bg-blue-500 text-white px-4 py-2 rounded"
       >
         Open Stacklings
@@ -88,16 +132,19 @@ export default function PopupView() {
   );
 }
 
-function openOrFocusHomePage() {
+async function toggleHomepage() {
   const extensionUrl = chrome.runtime.getURL('/src/home/home.html');
+  const allTabs = await chrome.tabs.query({});
 
-  chrome.tabs.query({}, (tabs) => {
-    const existingTab = tabs.find((tab) => tab.url === extensionUrl);
-    if (existingTab && existingTab.id !== undefined) {
-      chrome.tabs.update(existingTab.id, { active: true });
-    } else {
-      chrome.tabs.create({ url: extensionUrl });
-    }
-  });
+  const existingTab = allTabs.find((tab) => tab.url === extensionUrl);
+
+  if (existingTab?.id != null) {
+    await chrome.windows.update(existingTab.windowId!, { focused: true });
+    await chrome.tabs.update(existingTab.id, { active: true });
+  } else {
+    // open new tab in curr window
+    const currentWindow = await chrome.windows.getCurrent();
+    await chrome.tabs.create({ url: extensionUrl, windowId: currentWindow.id });
+  }
 }
 

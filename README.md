@@ -1,6 +1,6 @@
 # Tabbify
 
-Tabbify is a Chrome Extension that organizes your tab groups into a sexy library-style interface!!
+Tabbify is a Chrome Extension that organizes your tab groups into a sexy library-style interface!! :p
 
 ## Features
 
