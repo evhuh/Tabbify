@@ -1,28 +1,23 @@
 // full-page Home UI component
+import { DndContext } from '@dnd-kit/core';
+import LibraryPanel from './components/LibraryPanel';
+import WhiteboardPanel from './components/WhiteboardPanel';
 
 export default function HomeView() {
+  const handleDragEnd = (event: any) => {
+    const { active, over } = event;
+    console.log('Dragged:', active.id, 'Dropped on:', over?.id);
+    // TODO: update Zustand based on drag logic
+  };
+
   return (
-    <div className="flex h-screen">
-
+    <DndContext onDragEnd={handleDragEnd}>
     <div className="flex h-screen overflow-hidden">
-      {/* Library Sidebar */}
-      <aside className="w-64 overflow-y-auto bg-gray-100 p-4">
-        <h2 className="text-lg font-bold mb-2">Library</h2>
-        <div className="space-y-2">
-          <div className="bg-white p-2 shadow rounded">Folder 1</div>
-          <div className="bg-white p-2 shadow rounded">Folder 2</div>
-        </div>
-      </aside>
 
-      {/* Whiteboard Area */}
-      <main className="flex-1 overflow-hidden bg-white p-4">
-        <h2 className="text-lg font-bold mb-2 bg-blue-50">Whiteboard</h2>
-        {/* <div className="h-full border-2 border-dashed border-gray-300 rounded p-4">
-          Drag Stacks here!
-        </div> */}
-      </main>
+      <LibraryPanel />
+      <WhiteboardPanel />
 
     </div>
-    </div>
+    </DndContext>
   );
 }

@@ -13,7 +13,6 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { PersistOptions } from 'zustand/middleware';
 
-
 // Schema
 type WhiteboardItem = {
     id: string;
@@ -98,12 +97,14 @@ export const useTabStore = create<TabStore>()(
             }));
         },
 
+        // for popup btn
         addGlobalStack: (stack) => {
             set((state) => ({
                 globalStacks: [...state.globalStacks, stack]
             }));
         },
 
+        // for folders
         addStack: (folderId, stack) => {
             set((state) => ({
             folders: state.folders.map((folder) =>
@@ -210,3 +211,4 @@ export const useTabStore = create<TabStore>()(
   )
 );
 
+export type { Folder, Stack, Tab };
