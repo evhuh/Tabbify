@@ -1,6 +1,6 @@
 
-import { useState } from 'react';
-import { ChevronDown, ChevronRight, Star } from 'lucide-react';
+import { useEffect, useState, useRef } from 'react';
+import { ChevronDown, ChevronRight, Star, StarOff } from 'lucide-react';
 
 type Stack = {
     id: string;
@@ -31,14 +31,27 @@ export default function FolderCard({
 }: FolderCardProps) {
     const [expanded, setExpanded] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
-    const [editName, setEditName] = useState(name);
+    const [editName, setEditName] = useState("");
+    const inputRef = useRef<HTMLInputElement | null>(null);
+
+    const startEditing = () => {
+        setEditName(name === "Untitled Folder" ? "" : name);
+        setIsEditing(true);
+    }
+
+    useEffect(() => {
+        if (isEditing && inputRef.current) {
+            inputRef.current.focus();
+            inputRef.current.select();
+        }
+    }, [isEditing]);
 
     return (
         <div className="relative rounded-2xl border border-gray-300 bg-yellow-50 p-3 mb-4">
         {/* top-right */}
         {/* TODO: CETNER TO TITLE */}
         <div className="absolute top-2 right-2 flex flex-col items-end space-y-1">
-            {pinned && <Star size={14} className="text-yellow-500" />}
+            {pinned ? <Star size={14} className="text-yellow-500" /> : <StarOff size={14} className="text-gray-500"/>}
         </div>
 
         {/* ROW 1 */}
@@ -49,18 +62,22 @@ export default function FolderCard({
 
             {isEditing ? (
             <input
+                ref={inputRef}
                 value={editName}
+                placeholder="Untitled Folder"
                 onChange={(e) => setEditName(e.target.value)}
                 onBlur={() => {
-                setIsEditing(false);
-                onRename?.(editName);
+                    const trimmed = editName.trim();
+                    const finalName = trimmed || "Untitled Folder";
+                    setIsEditing(false);
+                    onRename?.(finalName);
                 }}
-                autoFocus
+                // autoFocus
                 className="bg-transparent border-none outline-none font-semibold text-sm"
             />
             ) : (
             <h3
-                onClick={() => setIsEditing(true)}
+                onClick={startEditing}
                 className="font-semibold text-sm cursor-pointer"
             >
                 {name || 'Untitled Folder'}
@@ -70,8 +87,20 @@ export default function FolderCard({
 
         {/* ROW2 */}
         <div className="mt-1 flex gap-3 text-xs text-gray-400 font-medium">
-            <button onClick={onDelete} className="hover:text-black transition">Delete</button>
-            <button onClick={onTogglePin} className="hover:text-black transition">Star</button>
+            {/* DELETE */}
+            <button 
+                onClick={onDelete} 
+                className="hover:text-black transition flex items-center gap-1">
+                Delete
+            </button>
+
+            {/* STAR */}
+            <button 
+                onClick={onTogglePin} 
+                className="hover:text-black transition flex items-center gap-1">
+                {pinned ? 'Unpin' : 'Pin'}
+            </button>
+
             <div
             className="ml-auto w-3 h-3 rounded-full"
             style={{ backgroundColor: color }}

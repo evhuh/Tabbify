@@ -41,6 +41,7 @@ type Folder = {
     id: string;
     name: string;
     pinned: boolean;
+    pinnedAt?: number;
     stacks: Stack[];
 };
 
@@ -53,6 +54,7 @@ type TabStore = {
     // Folder actions
     addFolder: (name: string) => void;
     toggleFolderPin: (id: string) => void;
+    removeFolder: (id: string) => void;
 
     addGlobalStack: (stack: Stack) => void;
 
@@ -92,8 +94,20 @@ export const useTabStore = create<TabStore>()(
         toggleFolderPin: (id) => {
             set((state) => ({
             folders: state.folders.map((f) =>
-                f.id === id ? { ...f, pinned: !f.pinned } : f
-            )
+                f.id === id 
+                    ? { 
+                        ...f, 
+                        pinned: !f.pinned,
+                        pinnedAt: !f.pinned ? Date.now() : undefined,
+                    } 
+                    : f
+            ),
+            }));
+        },
+
+        removeFolder: (id) => {
+            set((state) => ({
+                folders: state.folders.filter((folder) => folder.id !== id),
             }));
         },
 
