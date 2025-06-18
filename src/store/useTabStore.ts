@@ -33,6 +33,7 @@ type Stack = {
     name: string;
     color: string;
     pinned: boolean;
+    pinnedAt?: number;
     locked: boolean;
     tabs: Tab[];
 };
@@ -63,6 +64,9 @@ type TabStore = {
     updateStack: (stackId: string, changes: Partial<Stack>) => void;
     moveStack: (fromFolderId: string, toFolderId: string, stackId: string) => void;
     removeStack: (folderId: string, stackId: string) => void;
+
+    // Library actions
+    reorderLibraryItems: (orderedIds: string[]) => void;
 
     // Whiteboard actions
     addWhiteboardItem: (item: Omit<WhiteboardItem, 'id'>) => void;
@@ -173,6 +177,25 @@ export const useTabStore = create<TabStore>()(
                 : folder
             )
             }));
+        },
+
+        reorderLibraryItems: (orderedIds: string[]) => {
+            set((state) => {
+                const folders: Folder[] = [];
+                const globalStacks: Stack[] = [];
+
+                for (const id of orderedIds) {
+                    if (id.startsWith('folder-')) {
+                        const folder = state.folders.find(f => `folder-${f.id}` === id);
+                        if (folder) folders.push(folder);
+                    } else if (id.startsWith('stack-')) {
+                        const stack = state.globalStacks.find(s => `stack-${s.id}` === id);
+                        if (stack) globalStacks.push(stack);
+                    }
+                }
+
+                return {folders, globalStacks,};
+            });
         },
 
         addWhiteboardItem: (item) => {

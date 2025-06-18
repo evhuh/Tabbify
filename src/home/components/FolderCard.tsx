@@ -47,7 +47,7 @@ export default function FolderCard({
     }, [isEditing]);
 
     return (
-        <div className="relative rounded-2xl border border-gray-300 bg-yellow-50 p-3 mb-4">
+        <div className="relative rounded-2xl border border-gray-300 bg-blue-50 p-3 mb-4">
         {/* top-right */}
         {/* TODO: CETNER TO TITLE */}
         <div className="absolute top-2 right-2 flex flex-col items-end space-y-1">
